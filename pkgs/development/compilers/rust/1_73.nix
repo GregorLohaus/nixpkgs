@@ -10,50 +10,51 @@
 # 3. Firefox and Thunderbird should still build on x86_64-linux.
 
 { stdenv, lib
+, buildPackages
+, targetPackages
 , newScope, callPackage
 , CoreFoundation, Security, SystemConfiguration
-, pkgsBuildTarget, pkgsBuildBuild, pkgsBuildHost, pkgsTargetTarget
+, pkgsBuildTarget, pkgsBuildBuild, pkgsBuildHost
 , makeRustPlatform
-, wrapRustcWith
-, llvmPackages_17, llvm_17
+, llvmPackages_16, llvm_16
 } @ args:
 
 import ./default.nix {
-  rustcVersion = "1.77.1";
-  rustcSha256 = "7hBuTFafUtujtbKCsQWCD4a9j2s9CcBrjc6C+xuzpKE=";
+  rustcVersion = "1.74.0";
+  rustcSha256 = "sha256-iCtYS8Mhxdz+d82qafJ3kGuTYlXveAj81cdJKSXPEEk=";
 
-  llvmSharedForBuild = pkgsBuildBuild.llvmPackages_17.libllvm.override { enableSharedLibraries = true; };
-  llvmSharedForHost = pkgsBuildHost.llvmPackages_17.libllvm.override { enableSharedLibraries = true; };
-  llvmSharedForTarget = pkgsBuildTarget.llvmPackages_17.libllvm.override { enableSharedLibraries = true; };
+  llvmSharedForBuild = pkgsBuildBuild.llvmPackages_16.libllvm.override { enableSharedLibraries = true; };
+  llvmSharedForHost = pkgsBuildHost.llvmPackages_16.libllvm.override { enableSharedLibraries = true; };
+  llvmSharedForTarget = pkgsBuildTarget.llvmPackages_16.libllvm.override { enableSharedLibraries = true; };
 
   # For use at runtime
-  llvmShared = llvm_17.override { enableSharedLibraries = true; };
+  llvmShared = llvm_16.override { enableSharedLibraries = true; };
 
   # Expose llvmPackages used for rustc from rustc via passthru for LTO in Firefox
-  llvmPackages = llvmPackages_17;
+  llvmPackages = llvmPackages_16;
 
   # Note: the version MUST be one version prior to the version we're
   # building
-  bootstrapVersion = "1.76.0";
+  bootstrapVersion = "1.73.0";
 
   # fetch hashes by running `print-hashes.sh ${bootstrapVersion}`
   bootstrapHashes = {
-    i686-unknown-linux-gnu = "4c3eefc9341b8809235e6c4fbcbc19ab52a5cbe771292c400df068c12984fa3e";
-    x86_64-unknown-linux-gnu = "9d589d2036b503cc45ecc94992d616fb3deec074deb36cacc2f5c212408f7399";
-    x86_64-unknown-linux-musl = "aa8568f4d262468aaf4f622bd421c5435b24454d8fbcdae48da1162962205384";
-    arm-unknown-linux-gnueabihf = "7d1da067362fc64bcad198d90a61e024d5712aed76e17b28e1cd7e8ba263cc6f";
-    armv7-unknown-linux-gnueabihf = "c03346d56d4a860cd3a8d2d2a7ea75c510b68204e3ad97b3770076595261c913";
-    aarch64-unknown-linux-gnu = "2e8313421e8fb673efdf356cdfdd4bc16516f2610d4f6faa01327983104c05a0";
-    aarch64-unknown-linux-musl = "a1d1c8ccb8ea00cfa2b79d80411b8eb22b2bef5214f86536825361e98d7c617a";
-    x86_64-apple-darwin = "7bdbe085695df8e46389115e99eda7beed37a9494f6b961b45554c658e53b8e7";
-    aarch64-apple-darwin = "17496f15c3cb6ff73d5c36f5b54cc110f1ac31fa09521a7991c0d7ddd890dceb";
-    powerpc64le-unknown-linux-gnu = "44b3494675284d26b04747a824dc974e32fd8fd46fc0aa06a7c8ebe851332d2c";
-    riscv64gc-unknown-linux-gnu = "4a9db321874fc441235b71eb8aa295fc50251305e461540b25b4eef89fb56255";
+    i686-unknown-linux-gnu = "6a088acbbda734d27e8b431499f1d746de7781673b88fead3aeae072be1d1a5a";
+    x86_64-unknown-linux-gnu = "aa4cf0b7e66a9f5b7c623d4b340bb1ac2864a5f2c2b981f39f796245dc84f2cb";
+    x86_64-unknown-linux-musl = "c888457d106ccd40288ca8db1cb966b23d719c9a128daca701ecc574c53773d4";
+    arm-unknown-linux-gnueabihf = "9c29bb42786aedbb16ea71564eb06068a8b01cca6c6b8857f0c37f91dfba7134";
+    armv7-unknown-linux-gnueabihf = "092b32b82c602c18279d76d9a96763e85030aa62cda64c1bc73fc1f6355bb99c";
+    aarch64-unknown-linux-gnu = "e54d7d886ba413ae573151f668e76ea537f9a44406d3d29598269a4a536d12f6";
+    aarch64-unknown-linux-musl = "f4e9ff895aa55558777585ad4debe2ccf3c0298cb5d65db67814f62428de4a5b";
+    x86_64-apple-darwin = "ece9646bb153d4bc0f7f1443989de0cbcd8989a7d0bf3b7fb9956e1223954f0c";
+    aarch64-apple-darwin = "9c96e4c57328fb438ee2d87aa75970ce89b4426b49780ccb3c16af0d7c617cc6";
+    powerpc64le-unknown-linux-gnu = "8fa215ee3e274fb64364e7084613bc570369488fa22cf5bc8e0fe6dc810fe2b9";
+    riscv64gc-unknown-linux-gnu = "381379a2381835428b2e7a396b3046581517356b7cc851e39e385aebd5700623";
   };
 
-  selectRustPackage = pkgs: pkgs.rust_1_77;
+  selectRustPackage = pkgs: pkgs.rust_1_74;
 
   rustcPatches = [ ];
 }
 
-(builtins.removeAttrs args [ "llvmPackages_17" "llvm_17"])
+(builtins.removeAttrs args [ "pkgsBuildTarget" "pkgsBuildHost" "llvmPackages_16" "llvm_16"])

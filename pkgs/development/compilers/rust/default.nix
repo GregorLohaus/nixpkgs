@@ -12,21 +12,17 @@
 , llvmPackages # Exposed through rustc for LTO in Firefox
 }:
 { stdenv, lib
+, buildPackages
+, targetPackages
 , newScope, callPackage
 , CoreFoundation, Security, SystemConfiguration
 , pkgsBuildBuild
-, pkgsBuildHost
-, pkgsBuildTarget
-, pkgsTargetTarget
 , makeRustPlatform
-, wrapRustcWith
 }:
 
 let
   # Use `import` to make sure no packages sneak in here.
-  lib' = import ../../../build-support/rust/lib {
-    inherit lib stdenv pkgsBuildHost pkgsBuildTarget pkgsTargetTarget;
-  };
+  lib' = import ../../../build-support/rust/lib { inherit lib stdenv buildPackages targetPackages; };
   # Allow faster cross compiler generation by reusing Build artifacts
   fastCross = (stdenv.buildPlatform == stdenv.hostPlatform) && (stdenv.hostPlatform != stdenv.targetPlatform);
 in
@@ -61,14 +57,14 @@ in
       else
         self.buildRustPackages.overrideScope (_: _:
         lib.optionalAttrs (stdenv.buildPlatform == stdenv.hostPlatform)
-          (selectRustPackage pkgsBuildHost).packages.prebuilt);
+          (selectRustPackage buildPackages).packages.prebuilt);
       bootRustPlatform = makeRustPlatform bootstrapRustPackages;
     in {
       # Packages suitable for build-time, e.g. `build.rs`-type stuff.
-      buildRustPackages = (selectRustPackage pkgsBuildHost).packages.stable // { __attrsFailEvaluation = true; };
+      buildRustPackages = (selectRustPackage buildPackages).packages.stable;
       # Analogous to stdenv
       rustPlatform = makeRustPlatform self.buildRustPackages;
-      rustc-unwrapped = self.callPackage ./rustc.nix ({
+      rustc = self.callPackage ./rustc.nix ({
         version = rustcVersion;
         sha256 = rustcSha256;
         inherit enableRustcDev;
@@ -79,10 +75,6 @@ in
         # Use boot package set to break cycle
         inherit (bootstrapRustPackages) cargo rustc rustfmt;
       });
-      rustc = wrapRustcWith {
-        inherit (self) rustc-unwrapped;
-        sysroot = if fastCross then self.rustc-unwrapped else null;
-      };
       rustfmt = self.callPackage ./rustfmt.nix {
         inherit Security;
         inherit (self.buildRustPackages) rustc;

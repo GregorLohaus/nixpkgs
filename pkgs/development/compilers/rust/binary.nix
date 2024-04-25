@@ -1,4 +1,4 @@
-{ lib, stdenv, makeWrapper, wrapRustc, bash, curl, darwin, zlib
+{ lib, stdenv, makeWrapper, bash, curl, darwin, zlib
 , autoPatchelfHook, gcc
 , version
 , src
@@ -19,15 +19,14 @@ let
 in
 
 rec {
-  rustc-unwrapped = stdenv.mkDerivation {
+  rustc = stdenv.mkDerivation {
     pname = "rustc-${versionType}";
 
     inherit version;
     inherit src;
 
     meta = with lib; {
-      homepage = "https://www.rust-lang.org/";
-      sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+      homepage = "http://www.rust-lang.org/";
       description = "A safe, concurrent, practical language";
       maintainers = with maintainers; [ qknight ];
       license = [ licenses.mit licenses.asl20 ];
@@ -62,8 +61,6 @@ rec {
     setupHooks = ./setup-hook.sh;
   };
 
-  rustc = wrapRustc rustc-unwrapped;
-
   cargo = stdenv.mkDerivation {
     pname = "cargo-${versionType}";
 
@@ -71,9 +68,8 @@ rec {
     inherit src;
 
     meta = with lib; {
-      homepage = "https://doc.rust-lang.org/cargo/";
-      sourceProvenance = with sourceTypes; [ binaryNativeCode ];
-      description = "The Rust package manager";
+      homepage = "http://www.rust-lang.org/";
+      description = "A safe, concurrent, practical language";
       maintainers = with maintainers; [ qknight ];
       license = [ licenses.mit licenses.asl20 ];
     };
