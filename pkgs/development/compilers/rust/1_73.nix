@@ -52,7 +52,7 @@ import ./default.nix {
     riscv64gc-unknown-linux-gnu = "381379a2381835428b2e7a396b3046581517356b7cc851e39e385aebd5700623";
   };
 
-  selectRustPackage = pkgs: pkgs.rust_1_74;
+  selectRustPackage = pkgs: pkgs.rust_1_73;
 
   rustcPatches = [ ];
 }
